@@ -1,0 +1,5 @@
+__pycache__
+gcx_files/
+compiled/
+output/
+*.cmd
