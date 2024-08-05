@@ -12,12 +12,13 @@ class RadioComp():
     gcx = GcxData()
     gcl_comp = GclComp()
 
-    def __init__(self, vox_files=[]) -> None:
+    def __init__(self, padding=True, vox_files=[]) -> None:
 
         self.gcx = GcxData()
         self.dialog_calls = {}
         self.vox_files = vox_files
         self.is_pc_version = len( vox_files ) == 0
+        self.padding = padding
 
     def compile_json_files(self, radio_dir):
         ''' Compile the dialog.json files from radio_dir '''
@@ -52,8 +53,9 @@ class RadioComp():
             dialog_data.extend( self.compile_radio( dialog['DATA'] ) )
             for glyph_image in dialog['FONTS']:
                 dialog_data.push_hex_string( glyph_image )
-            while (len( data ) + len( dialog_data )) % 0x800 != 0:
-                dialog_data.push_byte( 0 )
+            if self.padding:
+                while (len( data ) + len( dialog_data )) % 0x800 != 0:
+                    dialog_data.push_byte( 0 )
             data.extend( dialog_data )
 
             # Prepare radio calls required for recompiling gcl files.

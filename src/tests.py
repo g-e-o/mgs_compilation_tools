@@ -20,6 +20,7 @@ class Test():
         self.total_files_tested = 0
         self.total_bytes_matched = 0
         self.total_success = 0
+        self.padding = True
 
     def __del__(self):
 
@@ -29,9 +30,10 @@ class Test():
         print('  - %.2f mb matched.' % (self.total_bytes_matched / 1000000))
         print('----------------------------------------')
 
-    def test(self, mgs_path):
+    def test(self, mgs_path, padding=True):
         ''' Tests to perform '''
 
+        self.padding = padding
         self.test_all( os.path.join( mgs_path, 'stage' ),
                        os.path.join( mgs_path, 'RADIO.DAT' ) )
 
@@ -75,10 +77,10 @@ class Test():
 
         # Decompile RADIO.DAT
         print('%.1f Decompiling %s...' % (self.elapsed(), os.path.basename(radio_path)))
-        radio_decomp = RadioDecomp( GcxData( radio_path ), vox_files=vox_files )
+        radio_decomp = RadioDecomp( GcxData( radio_path ), padding=self.padding, vox_files=vox_files )
 
         # Recompile radio data
-        radio_comp = RadioComp( vox_files=vox_files )
+        radio_comp = RadioComp( padding=self.padding, vox_files=vox_files )
         print('%.1f Recompiling %s...' % (self.elapsed(), os.path.basename(radio_path)))
         radio_comp.compile_radio_file( radio_decomp.tree_data )
         success = self.isMatching( radio_decomp, radio_comp )

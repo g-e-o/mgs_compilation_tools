@@ -42,7 +42,9 @@ class Main():
         group.add_argument('-c', '--compile', metavar='path',
                             help='compile game files from directory')
         self.parser.add_argument('-o', '--output', metavar='path',
-                            help='output directory for exporting decompiled files')
+                            help='output directory for exporting decompiled/recompiled files')
+        self.parser.add_argument('--padding', action=argparse.BooleanOptionalAction, default=True,
+                            help='add padding for radio dialogs inside RADIO.DAT')
         self.args = self.parser.parse_args()
 
     def check_path(self, path):
@@ -74,7 +76,7 @@ class Main():
         tests = Test()
         for input_path in input_paths:
             print( '- Testing "%s":' % (input_path) )
-            tests.test( input_path )
+            tests.test( input_path, padding=self.args.padding )
 
     def decompile(self, input_path, output_dir):
         ''' Decompile game files '''
@@ -89,7 +91,9 @@ class Main():
 
         # Decompile RADIO.DAT
         print( 'Decompiling radio...')
-        radio = RadioDecomp( GcxData( os.path.join( input_path, 'RADIO.DAT' ) ), vox_files=vox_files )
+        radio = RadioDecomp( GcxData( os.path.join( input_path, 'RADIO.DAT' ) ),
+                             padding=self.args.padding,
+                             vox_files=vox_files )
         dialog_files = radio.to_json_files()
         radio_dir = os.path.join( output_dir, 'RADIO' )
         if not os.path.isdir( radio_dir ):
@@ -108,7 +112,10 @@ class Main():
                 if file.endswith( '.gcx' ):
                     gcx_file = os.path.join( subdir, file )
                     print('Decompiling gcx file: "%s"' % gcx_file)
-                    gcl = GclDecomp( GcxData( gcx_file ), radio=radio, vox_files=vox_files, demo_files=demo_files )
+                    gcl = GclDecomp( GcxData( gcx_file ),
+                                     radio=radio,
+                                     vox_files=vox_files,
+                                     demo_files=demo_files )
                     gcl.decompile_gcx_file()
                     file_path = gcx_file.replace( input_path, output_dir ) \
                                         .replace( 'a242.gcx', 'demo.gcx' ) \

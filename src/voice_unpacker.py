@@ -30,7 +30,9 @@ class VoiceUnpacker:
                 vox_file_data = self.gcx[vox_offset : offset-last_padding-1]
                 vox_file_hash = hashlib.sha256( vox_file_data ).hexdigest()
 
-                if vox_file_hash == '7ae5c15e2e585a85b327cf24b2fe73e415a9a067cff74ee5d695fcaa11b4ca90':
+                if vox_file_hash == '7ae5c15e2e585a85b327cf24b2fe73e415a9a067cff74ee5d695fcaa11b4ca90' \
+                or vox_file_hash == '6d7f2db007152a98d08aaf969453d86c9aef736152cd5c0d963b2d3799b49d43' \
+                or vox_file_hash == '1597965f6325a52dd49dcc0863b097aa8a249998513ca40e2e8a6fcec024c96f':
                     vox_file_data.append( 0 )
                     vox_file_hash = hashlib.sha256( vox_file_data ).hexdigest()
                 if vox_file_hash in self.pc_voice_files.keys():

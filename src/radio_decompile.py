@@ -10,7 +10,7 @@ from constants import RadioCode
 class RadioDecomp():
     ''' Decompile radio.dat file '''
 
-    def __init__(self, gcx: GcxData, vox_files={}) -> None:
+    def __init__(self, gcx: GcxData, padding=True, vox_files={}) -> None:
 
         self.gcx = gcx
         self.gcl_decomp = GclDecomp( gcx )
@@ -18,6 +18,7 @@ class RadioDecomp():
         self.is_pc_version = False
         self.vox_files = vox_files
         self.dialog_files = []
+        self.padding = padding
 
         self.decompile_radio_file()
         self.resolve_dialog_filenames()
@@ -50,9 +51,12 @@ class RadioDecomp():
             def find_lowest_id(node_type, node_value):
                 if node_type == RadioCode.VOICE.name:
                     voice_name, _ = node_value.get()
-                    voice_code = int( voice_name[2:].replace('.vox', ''), 16 )
-                    if self.lowest_vox_id == -1 or self.lowest_vox_id < voice_code:
-                        self.lowest_vox_id = voice_code
+                    try:
+                        voice_code = int( voice_name[2:].replace('.vox', ''), 16 )
+                        if self.lowest_vox_id == -1 or self.lowest_vox_id < voice_code:
+                            self.lowest_vox_id = voice_code
+                    except:
+                        pass
             dialog.browse( find_lowest_id )
 
             if self.lowest_vox_id == -1:
@@ -148,6 +152,10 @@ class RadioDecomp():
                         self.gcx.offset -= i
                         val = 0
                         break
+                    if self.gcx.offset + 1 == len( self.gcx ):
+                        self.gcx.offset -= i
+                        val = 0
+                        break
                     val += self.gcx.read_byte()
                 if val == 0:
                     break
@@ -162,7 +170,8 @@ class RadioDecomp():
             dialog_data = self.decompile()
             self.gcx.offset = fonts_end_offset
 
-            self.gcx.offset += ( 0x800 - ( self.gcx.offset % 0x800 ) )
+            if self.padding:
+                self.gcx.offset += ( 0x800 - ( self.gcx.offset % 0x800 ) )
 
             dialog = GclNode({
                 'OFFSET':      dialog_offset, # Shouldn't be needed.
@@ -316,6 +325,10 @@ class RadioDecomp():
             case RadioCode.ENDLINE.value:
 
                 value = '\n'
+
+            case _:
+                print(f'Error: unexpected radio code (RadioCode: {radio_code}, offset: {hex(self.gcx.offset)})')
+                sys.exit(1)
 
         return GclNode({ RadioCode( radio_code ).name: value })
 
